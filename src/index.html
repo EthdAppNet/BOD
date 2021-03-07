@@ -9,6 +9,7 @@
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="#">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -21,12 +22,48 @@
     <div class="container" style="width: 650px;">
       <div class="row">
         <div class="col-lg-12">
-          <h1 class="text-center">Election Results</h1>
-          <hr/>
-          <br/>
+          <table class="table">
+              <thead>
+              <h2 class="text-center">Available Plans</h2>
+               <th scope="col">#</th>
+                <th scope="col">Plan</th>
+                <th scope="col">Charges</th>
+                </tr>
+              </thead>
+              <tbody id="planResults">
+              </tbody>
+            </table>
+            </div>
+            <h3 class="text-center">Base subscription</h3>
+          <form onSubmit="App.baseSub();return false;">
+              <div class="form-group">
+                <label for="planSelect">Select Plan</label>
+                <select class="form-control" id="planSelect">
+                </select>
+                <input type="num" id ="usrID" placeholder="user ID "/input>
+              </div>
+              <button type="submit" class="btn btn-primary">subscribe</button>
+            </form>
+            <hr/>
+         <p id="accountAddress" class="text-left"></p>
+         <br/>
+         <p id="activeSub" class="text-left"></p>
+         <hr/>
+         </div>
+         <h3 class="text-center">Bandwidth on Demand</h3>
+         <form onSubmit="App.BOD();return false;">
+              <div class="form-group">
+                <input type="num" id ="BW" placeholder="Bandwidth "/input>
+                <input type="num" id ="Dur" placeholder="Duration "/input>
+                <input type="num" id ="usrID_BOD" placeholder="user_ID" /input>
+              </div>
+              <button type="submit" class="btn btn-primary">Request</button>
+              <hr />
+            </form>
           <div id="loader">
             <p class="text-center">Loading...</p>
           </div>
+
           <div id="content" style="display: none;">
             <table class="table">
               <thead>
@@ -45,11 +82,13 @@
                 <label for="candidatesSelect">Select Candidate</label>
                 <select class="form-control" id="candidatesSelect">
                 </select>
+              
               </div>
               <button type="submit" class="btn btn-primary">Vote</button>
               <hr />
             </form>
-            <p id="accountAddress" class="text-center"></p>
+        <p id="accountAddress" class="text-center"></p>
+            <p id="YO" class="text-center"></p>
           </div>
         </div>
       </div>

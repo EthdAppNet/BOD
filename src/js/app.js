@@ -1,8 +1,9 @@
+
 App = {
   web3Provider: null,
   contracts: {},
-  account: '0x0',
-  hasVoted: false,
+  
+  
 
   init: function() {
     return App.initWeb3();
@@ -29,44 +30,90 @@ App = {
       // Connect provider to interact with contract
       App.contracts.Election.setProvider(App.web3Provider);
 
-      App.listenForEvents();
+      App.render();
 
-      return App.render();
+      
     });
   },
 
-  // Listen for events emitted from the contract
-  listenForEvents: function() {
+  // base subscription : a payable function 
+
+  baseSub: function() {
+    var usrID = $("#usrID").val();
+    var planSelect = $("#planSelect").val();
+    console.log("munim" + ":"+usrID +":"+ planSelect );
+   var  paybaseSub = '0000000000000000000'; 
+        if (planSelect=='Monthly'){
+      paybaseSub = '4000000000000000000';
+    }
+      else {
+      paybaseSub = '6000000000000000000'; 
+    }
+App.contracts.Election.deployed().then(function(instance) {
+    instance.baseSub(usrID, planSelect, {value:paybaseSub, gas: '6721975', gasPrice: '20000000000'});
+    }).then(function(result) {
+    }).catch(function(err) {
+    }).then($("#activeSub").html("<b>Active Plan:</b>" + planSelect));
+  },
+
+ //Bandwidth on demand
+  
+  BOD: function(){
+   var usrID_BOD = $("#usrID_BOD").val();
+   var BW = $("#BW").val();
+   var Dur = $("#Dur").val();
+   var perMin = 456621004566;
+   //calculating BOD amount : per min cost x BW x Dur ; 
+   var payBOD = perMin* BW * Dur ;
+    console.log(usrID_BOD);
+    console.log(BW);
+    console.log(Dur);
     App.contracts.Election.deployed().then(function(instance) {
-      // Restart Chrome if you are unable to receive this event
-      // This is a known issue with Metamask
-      // https://github.com/MetaMask/metamask-extension/issues/2393
-      instance.votedEvent({}, {
-        fromBlock: 0,
-        toBlock: 'latest'
-      }).watch(function(error, event) {
-        console.log("event triggered", event)
-        // Reload when a new vote is recorded
-        App.render();
-      });
-    });
-  },
+    instance.bOdSub(BW, Dur, usrID_BOD, {value: payBOD.toString(), gas: '6721975', gasPrice: '20000000000'});
+    }).then(function(result) {
+   // App.render();
+    }).catch(function(err) {});
+},
 
-  render: function() {
+render: function() {
     var electionInstance;
     var loader = $("#loader");
     var content = $("#content");
 
-    loader.show();
+    loader.hide();
     content.hide();
 
     // Load account data
-    web3.eth.getCoinbase(function(err, account) {
-      if (err === null) {
-        App.account = account;
-        $("#accountAddress").html("Your Account: " + account);
-      }
-    });
+    if(web3.currentProvider.enable){
+      //for metamask
+      web3.currentProvider.enable().then(function(acc){
+        App.account=acc[0];
+        $("#accountAddress").html("<b>your account:</b>" + App.account);
+      });
+    } else {
+      App.account= web3.eth.accounts[0];
+      $("#accountAddress").html("your account from else:" + App.account);
+    }
+
+    App.contracts.Election.deployed().then(function(instance) {
+      electionInstance = instance;
+      return electionInstance.seePlans();
+    }).then(function(seePlans){
+      var temp= seePlans;
+      temp = seePlans.split(',');
+      var w= $("#seePlans").html("Available Plans: " + temp[0]);
+      var planTemplate_1 = "<tr><th>" + 1 + "</th><td>" + temp[0] + "</td><td>" + temp[1] + "</td></tr>"
+      var planTemplate_2 = "<tr><th>" + 2 + "</th><td>" + temp[2] + "</td><td>" + temp[3] + "</td></tr>"
+          planResults=$("#planResults");
+          planResults.append(planTemplate_1);
+          planResults.append(planTemplate_2);
+      var planOption_1 = "<option value='" + temp[0] + "' >" + temp[0] + "</ option>"
+      var planOption_2 = "<option value='" + temp[2] + "' >" + temp[2] + "</ option>"
+      planSelect=$("#planSelect");
+      planSelect.append(planOption_1);
+      planSelect.append(planOption_2);
+      
+      });
 
     // Load contract data
     App.contracts.Election.deployed().then(function(instance) {
@@ -120,7 +167,8 @@ App = {
     });
   }
 };
-
+      $("#content").hide();
+      $("#loader").show();
 $(function() {
   $(window).load(function() {
     App.init();
